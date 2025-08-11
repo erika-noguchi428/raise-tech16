@@ -11,3 +11,5 @@ class StudentManagementApplicationTests {
 	}
 
 }
+
+//このファイルは講義内で削除されている
