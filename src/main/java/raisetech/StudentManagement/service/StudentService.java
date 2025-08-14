@@ -37,13 +37,26 @@ public class StudentService {
   public List<StudentDetail> searchStudentList() {
     List<Student> studentList = repository.search();
     List<StudentCourse> studentCourseList = repository.searchStudentsCoursesList();
-    return converter.convertStudentDetails(studentList, studentCourseList);
+    List<StudentStatus> studentStatusList = repository.searchStudentStatusList();
+
+    Map<Integer, StudentStatus> statusMap = studentStatusList.stream()
+        .collect(Collectors.toMap(StudentStatus::getCourseId, Function.identity()));
+
+    List<CourseDetail> courseDetails = studentCourseList.stream()
+        .map(studentCourse -> {
+          CourseDetail courseDetail = new CourseDetail();
+          courseDetail.setStudentCourse(studentCourse);
+          courseDetail.setStudentStatus(statusMap.get(studentCourse.getCourseId()));
+          return courseDetail;
+        })
+        .collect(Collectors.toList());
+    return converter.convertStudentDetails(studentList, courseDetails);
   }
 //検索処理
 
   /**
    * 受講生詳細の検索です。
-   * IDに紐づく受講生詳細情報を取得した後、その受講生に紐づく受講生コース
+   * IDに紐づく受講生詳細情報を取得した後、その受講生に紐づく受講生コース、受講生コース申し込み情報
    *
    * @param id 受講生ID
    * @return 受講生詳細
@@ -56,6 +69,23 @@ public class StudentService {
   }
 
 
+      // ② StudentCourse を取得
+      List<StudentCourse> studentCourses = repository.searchStudentCourse(student.getId());
+
+    List<Integer> courseIds = studentCourses.stream()
+        .map(StudentCourse::getCourseId)
+        .toList();
+
+    List<StudentStatus> studentStatuses = courseIds.stream()
+        .map(repository::searchStudentStatus)
+        .collect(Collectors.toList());
+
+    // ⑤ StudentCourse と StudentStatus を紐づけて CourseDetail を構築（コンバーター使用）
+      List<CourseDetail> courseDetails = converter.convertCourseDetails(studentCourses, studentStatuses);
+
+      // ⑥ StudentDetail にまとめて返却
+      return new StudentDetail(student, courseDetails);
+    }
 
   public List<StudentCourse> searchStudentCourseList() {
     return repository.searchStudentsCoursesList();
@@ -75,43 +105,66 @@ public class StudentService {
 
     //やりたいことをやる
     repository.registerStudent(student);
-    for (StudentCourse studentCourses : studentDetail.getStudentCourseList()) {
-      initStudentsCourse(studentCourses, student);
-      repository.registerStudentCourse(studentCourses);
-    }
-    //結果
+
+
+        for (CourseDetail courseDetail : studentDetail.getCourseDetail()) {
+          StudentCourse studentCourse = courseDetail.getStudentCourse();
+          initStudentsCourse(studentCourse, student);
+          repository.registerStudentCourse(studentCourse);
+
+          StudentStatus studentStatus = courseDetail.getStudentStatus();
+          initStudentStatus(studentStatus, studentCourse);
+          repository.registerStudentStatus(studentStatus);
+        }
     return studentDetail;
   }
+
 
   /**
    *受講生コース情報を登録する際の初期情報を設定する。
    *
    * @param studentCourses 受講生コース情報
-   * @param student 受講生
+   * @param              student 受講生
    */
-  private void initStudentsCourse(StudentCourse studentCourses, Student student) {
+   void initStudentsCourse(StudentCourse studentCourses, Student student) {
     LocalDateTime now = LocalDateTime.now();
     studentCourses.setStudentId(student.getId());
     studentCourses.setStartDate (now);
     studentCourses.setEndDate(now.plusYears(1));
   }
 
+
+  /**
+   *受講生コース情報を登録する際の初期情報を設定する。
+   *
+   * @param studentCourses 受講生コース情報
+   * @param              studentStatus コース状況
+   */
+  void initStudentStatus(StudentStatus studentStatus, StudentCourse studentCourses) {
+    studentStatus.setCourseId(studentCourses.getCourseId());
+  }
+
+
   /**
    * 受講生詳細の更新を行います。
    * 受講生と受講生コース情報をそれぞれ更新します。
-   * @param studentDetail
    */
-
   @Transactional
   public void updateStudent(StudentDetail studentDetail) {
     System.out.println("Student: " + studentDetail.getStudent());
+
     repository.updateStudent(studentDetail.getStudent());
-    studentDetail.getStudentCourseList()
-        .forEach(studentCourse -> repository.updateStudentCourses(studentCourse));
+
+    for (CourseDetail courseDetail : studentDetail.getCourseDetail()) {
+      StudentCourse studentCourse = courseDetail.getStudentCourse();
+      //initStudentsCourse(studentCourse, student);
+      repository.updateStudentCourses(studentCourse);
+
+      StudentStatus studentStatus = courseDetail.getStudentStatus();
+      repository.updateStudentStatus(studentStatus);
+      System.out.println("StudentStatus: statusId=" + studentStatus.getStatusId()
+          + ", courseId=" + studentStatus.getCourseId()
+          + ", status=" + studentStatus.getStatus());
   }
   }
-
-
-
-
-
+}
