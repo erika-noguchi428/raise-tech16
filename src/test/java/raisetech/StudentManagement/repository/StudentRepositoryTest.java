@@ -36,6 +36,12 @@ class StudentRepositoryTest {
     assertThat(actualStatus.size()).isEqualTo(3);
   }
 
+  //@Test
+  //void 受講生申し込み状況の全件検索が行えること() {
+   // List<StudentStatus> actualStatus = sut.searchStudentStatusList();
+   // assertThat(actualStatus).isNotEmpty();
+  //}
+
   @Test
   void 受講生の登録が行えること(){
     Student student = new Student();
@@ -80,6 +86,12 @@ class StudentRepositoryTest {
     studentStatus.setStatusId(1);
     studentStatus.setCourseId(1005);
     studentStatus.setStatus("本申込");
+
+    sut.registerStudentStatus(studentStatus);
+
+    List<StudentStatus> actualStatus = sut.searchStudentStatusList();
+    assertThat(actualStatus.size()).isEqualTo(4);
+
   }
 
 }

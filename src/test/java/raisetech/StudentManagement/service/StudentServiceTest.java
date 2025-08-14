@@ -53,32 +53,31 @@ class StudentServiceTest {
     studentStatus.setCourseId(1000);
     studentStatus.setStatus("本申込");
 
-    //Mockito
-    //事前準備
     StudentService sut = new StudentService(repository, converter);
 
     List<Student> studentList = List.of(student);
     List<StudentCourse> studentCourseList = List.of(studentCourse);
     List<StudentStatus> studentStatusList = List.of(studentStatus);
 
-    // CourseDetail を構築（studentCourse と studentStatus を紐づけ）
-    CourseDetail courseDetail = new CourseDetail(studentCourse, studentStatus);
-    List<CourseDetail> courseDetails = List.of(courseDetail);
-
-
-    // モック設定
     when(repository.search()).thenReturn(studentList);
     when(repository.searchStudentsCoursesList()).thenReturn(studentCourseList);
     when(repository.searchStudentStatusList()).thenReturn(studentStatusList);
 
-    // 実行
     sut.searchStudentList();
 
-    // 検証
-    verify(repository, times(1)).search();
-    verify(repository, times(1)).searchStudentsCoursesList();
-    verify(repository, times(1)).searchStudentStatusList();
-    verify(converter, times(1)).convertStudentDetails(studentList, courseDetails);
+    verify(repository).search();
+    verify(repository).searchStudentsCoursesList();
+    verify(repository).searchStudentStatusList();
+
+    ArgumentCaptor<List<CourseDetail>> courseDetailCaptor = ArgumentCaptor.forClass(List.class);
+    verify(converter).convertStudentDetails(eq(studentList), courseDetailCaptor.capture());
+
+    List<CourseDetail> actualCourseDetails = courseDetailCaptor.getValue();
+    assertThat(actualCourseDetails).hasSize(1);
+    CourseDetail actual = actualCourseDetails.get(0);
+
+    assertThat(actual.getStudentCourse()).isEqualTo(studentCourse);
+    assertThat(actual.getStudentStatus()).isEqualTo(studentStatus);
   }
 
 

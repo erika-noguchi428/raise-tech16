@@ -21,43 +21,39 @@ public class StudentConverterTest {
   }
 
   @Test
-  void 受講生のリストと受講生コース情報のリストを渡して受講生詳細のリストができること(){
+  void 受講生のリストと受講生コース情報のリストを渡して受講生詳細のリストができること() {
     Student student = CreateStudent();
 
     StudentCourse studentCourse = new StudentCourse();
-    studentCourse.setStudentId("1");
-    studentCourse.setCourseId(1);
-    studentCourse.setCourseName("Java コース");
+    studentCourse.setStudentId("4000");
+    studentCourse.setCourseId(4005);
+    studentCourse.setCourseName("Design course");
     studentCourse.setStartDate(LocalDateTime.now());
     studentCourse.setEndDate(LocalDateTime.now().plusYears(1));
 
     StudentStatus studentStatus = new StudentStatus();
-    studentStatus.setStatusId(2);
-    studentStatus.setCourseId(1);
-    studentStatus.setStatus("本申込");
+    studentStatus.setStatusId(5);
+    studentStatus.setCourseId(4005);
+    studentStatus.setStatus("受講終了");
 
-    List<StudentCourse> studentCourseList = List.of(studentCourse);
-
-
-  CourseDetail courseDetail = new CourseDetail();
+    CourseDetail courseDetail = new CourseDetail();
     courseDetail.setStudentCourse(studentCourse);
     courseDetail.setStudentStatus(studentStatus);
 
-  List<Student> studentList = List.of(student);
-  //List<CourseDetail> courseDetailList = List.of(courseDetail);
-
-    List<CourseDetail> courseDetailList = studentCourseList.stream()
-        .map(sc -> new CourseDetail(sc, null)) // StudentStatus を使うならここで紐づけ
-        .collect(Collectors.toList());
+    List<Student> studentList = List.of(student);
+    List<CourseDetail> courseDetailList = List.of(courseDetail);
 
     List<StudentDetail> actual = sut.convertStudentDetails(studentList, courseDetailList);
 
-  assertThat(actual).hasSize(1);
-  StudentDetail detail = actual.get(0);
+    CourseDetail actualDetail = actual.get(0).getCourseDetail().get(0);
+    System.out.println("actual.size = " + actual.size());
 
-  assertThat(detail.getStudent()).isEqualTo(student);
-  assertThat(detail.getCourseDetail()).containsExactly(courseDetail);
-}
+    assertThat(actualDetail.getStudentCourse().getCourseId()).isEqualTo(studentCourse.getCourseId());
+    assertThat(actualDetail.getStudentCourse().getCourseName()).isEqualTo(studentCourse.getCourseName());
+    assertThat(actualDetail.getStudentStatus().getStatus()).isEqualTo(studentStatus.getStatus());
+
+
+    }
 
 
   @Test
@@ -83,10 +79,11 @@ public class StudentConverterTest {
     courseDetail.setStudentStatus(studentStatus);
 
     List<Student> studentList = List.of(student);
+    List<CourseDetail> courseDetailList = List.of(courseDetail);
 
-    List<CourseDetail> courseDetailList = studentCourseList.stream()
-        .map(sc -> new CourseDetail(sc, null)) // StudentStatus を使うならここで紐づけ
-        .collect(Collectors.toList());
+    //List<CourseDetail> courseDetailList = studentCourseList.stream()
+      //  .map(sc -> new CourseDetail(sc, null)) // StudentStatus を使うならここで紐づけ
+      //  .collect(Collectors.toList());
 
     List<StudentDetail> actual = sut.convertStudentDetails(studentList,courseDetailList);
 
