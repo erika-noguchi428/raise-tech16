@@ -144,6 +144,27 @@ class StudentServiceTest {
   }
 
   @Test
+  void 条件を指定した受講生詳細の検索_リポジトリの処理が適切に呼び出せていること(){
+
+    SearchStudentConditionDto searchStudentConditionDto = new SearchStudentConditionDto();
+    searchStudentConditionDto.setStudentName("中田");
+
+    Student student = new Student();
+    student.setId("id");
+    when(repository.searchStudentCondition(searchStudentConditionDto)).thenReturn(List.of(student));
+    when(repository.searchStudentCourse("id")).thenReturn(new ArrayList<>());
+
+    StudentDetail expected = new StudentDetail(student, new ArrayList<>());
+
+    List<StudentDetail> actualList =sut.searchStudentCondition(searchStudentConditionDto);
+    StudentDetail actual = actualList.get(0);
+
+    verify(repository, times(1)).searchStudentCondition(searchStudentConditionDto);
+    verify(repository, times(1)).searchStudentCourse("id");
+    assertEquals(expected.getStudent().getId(), actual.getStudent().getId());
+  }
+
+  @Test
   void 受講生詳細の検索_受講コースとステータスが正しくCourseDetailに変換されていること() {
     // モックデータの準備
     Student student = new Student();

@@ -90,6 +90,53 @@ public class StudentService {
     }
 
 
+    //受講生を条件指定した検索を行います。
+    //①コントローラーから検索条件をうけとる
+  //項目の条件に合っているかチェックする機能
+  //②リポジトリ→xmlに渡して、項目に一致する受講生の情報をとってくる
+  //とってきた受講生のIDに紐づくコースっ情報と申し込み情報をとってくる
+// ↓ studentsの中のIDだけを抽出して
+
+
+  public List<StudentDetail> searchStudentCondition(SearchStudentConditionDto condition) {
+
+    // 条件に合う学生一覧を取得
+    List<Student> studentCondition = repository.searchStudentCondition(condition);
+
+    // 学生ID一覧を抽出
+    List<String> studentIds = studentCondition.stream()
+        .map(Student::getId)
+        .toList();
+
+    List<StudentCourse> studentCourses = studentIds.stream()
+        .flatMap(id -> repository.searchStudentCourse(id).stream())
+        .toList();
+
+    List<Integer> courseIds = studentCourses.stream()
+        .map(StudentCourse::getCourseId)
+        .toList();
+
+    List<StudentStatus> studentStatuses = courseIds.stream()
+        .map(repository::searchStudentStatus)
+        .collect(Collectors.toList());
+
+    List<StudentDetail> studentDetails = studentCondition.stream()
+        .map(student -> {
+          List<StudentCourse> coursesForStudent = studentCourses.stream()
+              .filter(studentCourse -> studentCourse.getStudentId().equals(student.getId()))
+              .toList();
+
+    // ⑤ StudentCourse と StudentStatus を紐づけて CourseDetail を構築（コンバーター使用）
+    List<CourseDetail> courseDetails = converter.convertCourseDetails(coursesForStudent, studentStatuses);
+
+    return new StudentDetail(student, courseDetails);
+  })
+      .toList();
+    // ⑥ StudentDetail にまとめて返却
+    return studentDetails;
+  }
+
+
   /**
    * 受講生詳細の登録を行います。
    * 受講生と受講生コース情報と受講生コース申し込み情報を個別に登録し、受講生コース情報には受講生情報を紐づける値とコース開始日、コース終了日を設定します。

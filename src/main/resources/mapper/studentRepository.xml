@@ -41,6 +41,42 @@
     WHERE course_id = #{courseId}
   </select>
 
+  <!-- 受講生の条件を指定した検索 -->
+  <select id="searchStudentCondition" resultType="raisetech.StudentManagement.data.Student">
+    SELECT *
+    FROM students
+    <where>
+      <if test="studentName != null">
+        AND student_name LIKE CONCAT ('%',#{studentName},'%')
+      </if>
+
+      <if test="studentNameFurigana != null">
+        AND studentName_furigana LIKE CONCAT ('%',#{studentNameFurigana},'%')
+      </if>
+
+      <if test="nickname != null">
+        AND nickname LIKE CONCAT ('%',#{nickname},'%')
+      </if>
+
+      <if test="email != null">
+        AND email LIKE CONCAT ('%',#{email},'%')
+      </if>
+
+      <if test="address != null">
+        AND address LIKE CONCAT ('%',#{address},'%')
+      </if>
+
+      <if test="age != null">
+        AND age = #{age}
+      </if>
+
+      <if test="gender != null">
+        AND gender = #{gender}
+      </if>
+
+    </where>
+  </select>
+
   <!-- 受講生の新規登録 -->
   <insert id="registerStudent" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO students (

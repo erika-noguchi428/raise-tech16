@@ -53,6 +53,19 @@ class StudentControllerTest {
   }
 
   @Test
+  void 条件指定した受講生詳細の検索ができて空のリストが返ってくること() throws Exception {
+    when(service.searchStudentCondition(any())).thenReturn(Collections.emptyList());
+
+    mockMvc.perform(get("/students/search")
+        .param("studentName", "鱗滝"))
+
+        .andExpect(status().isOk())
+    .andExpect(content().json("[]"));
+
+    verify(service, times(1)).searchStudentCondition(any());
+  }
+
+  @Test
   void 受講生詳細の登録が実行できて空で返ってくること()
       throws Exception{
     //リクエストデータは適切に構築して入力チェックの検証も兼ねている。
@@ -135,6 +148,13 @@ class StudentControllerTest {
      //   .andExpect(status().is4xxClientError())
        // .andExpect(content().string("このAPIは現在利用できません。古いURLとなっています。"));
   }
+
+  @Test
+  void 受講生を条件指定した際に条件がすべてnullなら例外が発生する() throws Exception {
+    mockMvc.perform(get("/students/search"))
+        .andExpect(status().isBadRequest());
+  }
+
 
   @Test
   void 受講生詳細の受講生で適切な値を入力したときに入力チェックに異常が発生しないこと(){

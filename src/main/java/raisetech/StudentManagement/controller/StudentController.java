@@ -69,29 +69,29 @@ public class StudentController {
   }
 
   /**
-   * 受講生詳細の登録を行います。
-   * @param studentDetail 受講生詳細
-   * @return 実行結果
+   * 条件を指定した受講生検索です。 受講生の任意の項目について条件を指定して検索できます。
+   *
+   * @param condition 検索条件（名前、年齢、コースなど）
+   * @return 受講生
    */
-  @Operation(summary = "受講生登録",description = "受講生を登録します。")
-  @PostMapping("/registerStudent")
-  public ResponseEntity<StudentDetail> registerStudent(
-      @RequestBody @Valid StudentDetail studentDetail) {
-    StudentDetail responseStudentDetail1 = service.registerStudent(studentDetail);
-    return ResponseEntity.ok(responseStudentDetail1);
+  @Operation(summary = "条件指定の受講生検索", description = "指定した条件の受講生を検索します。")
+  @GetMapping("/students/search")
+  public List<StudentDetail> searchStudents(@Validated @ModelAttribute SearchStudentConditionDto condition) {
+    if (condition.getStudentName() == null && condition.getStudentNameFurigana() == null
+        && condition.getNickname() == null
+        && condition.getEmail() == null && condition.getAddress() == null
+        && condition.getAge() == null
+        && condition.getGender() == null && condition.getIsDeleted() == null) {
+      throw new SearchConditionMissingException("検索条件を1つ以上指定してください");
+    }
+    return service.searchStudentCondition(condition);
   }
 
-  /**
-   * 受講生詳細の更新を行います。キャンセルフラグの更新もここで行います。（論理削除）
-   * @param studentDetail 受講生詳細
-   * @return 実行結果
-   */
-  @Operation(summary = "受講生更新",description = "受講生詳細を更新します。")
-  @PutMapping("/updateStudent")
-  public ResponseEntity<String> updateStudent(@RequestBody @Valid StudentDetail studentDetail) {
-    service.updateStudent(studentDetail);
-    return ResponseEntity.ok("更新処理が成功しました。");
-  }
+   // @GetMapping("/studentConditionException")
+  //  public StudentDetail searchConditionMissingException () {
+   //   throw new SearchConditionMissingException("検索条件を1つ以上指定してください");
+   // }
+
 
 
 }

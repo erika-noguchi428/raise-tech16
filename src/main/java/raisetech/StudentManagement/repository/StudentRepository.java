@@ -56,6 +56,13 @@ public interface StudentRepository {
    */
   StudentStatus searchStudentStatus (Integer courseId);
 
+  /**
+   * 受講生の条件指定による検索を行います。
+   * @param condition　受講生の項目
+   * @return 受講生の情報
+   */
+  List<Student> searchStudentCondition (SearchStudentConditionDto condition);
+
 
   /**
    * 受講生を新規登録します。IDに関しては自動採番を行う。
