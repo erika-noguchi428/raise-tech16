@@ -15,6 +15,9 @@ import raisetech.StudentManagement.data.StudentCourse;
 public class StudentDetail {
 
   private Student student;
-  private List<StudentCourse> studentCourseList;
+
+  @Valid
+  private List<CourseDetail> courseDetail;
+
 
 }
