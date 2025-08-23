@@ -51,7 +51,7 @@
       </if>
 
       <if test="studentNameFurigana != null">
-        AND studentName_furigana LIKE CONCAT ('%',#{studentNameFurigana},'%')
+        AND student_name_furigana LIKE CONCAT ('%',#{studentNameFurigana},'%')
       </if>
 
       <if test="nickname != null">
