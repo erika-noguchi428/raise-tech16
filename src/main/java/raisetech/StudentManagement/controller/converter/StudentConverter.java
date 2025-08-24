@@ -35,8 +35,8 @@ public class StudentConverter {
 
       List<CourseDetail> convertStudentCourses = courseDetails.stream()
           .filter(courseDetail ->
-                  Objects.equals(student.getId(), courseDetail.getStudentCourse().getStudentId())
-                      )
+              Objects.equals(student.getId(), courseDetail.getStudentCourse().getStudentId())
+          )
           .collect(Collectors.toList());
 
       studentDetail.setCourseDetail(convertStudentCourses);
@@ -54,25 +54,24 @@ public class StudentConverter {
    * @return　乗降性コース情報のリスト
    */
 
-public List<CourseDetail> convertCourseDetails(
-    List<StudentCourse> studentCourses,
-    List<StudentStatus> studentStatuses) {
+  public List<CourseDetail> convertCourseDetails(
+      List<StudentCourse> studentCourses,
+      List<StudentStatus> studentStatuses) {
 
-  Map<Integer, StudentStatus> statusMap = studentStatuses.stream()
-      .collect(Collectors.toMap(
-          StudentStatus::getCourseId,
-          status -> status,
-          (existing, replacement) -> existing
-      ));
+    Map<Integer, StudentStatus> statusMap = studentStatuses.stream()
+        .collect(Collectors.toMap(
+            StudentStatus::getCourseId,
+            status -> status,
+            (existing, replacement) -> existing
+        ));
 
-  // CourseDetail を構築
-  List<CourseDetail> courseDetails = studentCourses.stream()
-      .map(studentCourse -> {
-        StudentStatus status = statusMap.get(studentCourse.getCourseId());
-        return new CourseDetail(studentCourse, status);
-      })
-      .collect(Collectors.toList());
+    List<CourseDetail> courseDetails = studentCourses.stream()
+        .map(studentCourse -> {
+          StudentStatus status = statusMap.get(studentCourse.getCourseId());
+          return new CourseDetail(studentCourse, status);
+        })
+        .collect(Collectors.toList());
 
-  return courseDetails;
-}
+    return courseDetails;
+  }
 }

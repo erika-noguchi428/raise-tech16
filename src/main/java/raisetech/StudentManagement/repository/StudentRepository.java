@@ -2,17 +2,14 @@ package raisetech.StudentManagement.repository;
 
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Options;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Update;
+import raisetech.StudentManagement.controller.DTO.SearchStudentConditionDto;
 import raisetech.StudentManagement.data.Student;
 import raisetech.StudentManagement.data.StudentCourse;
+import raisetech.StudentManagement.data.StudentStatus;
 
 /**
  * 受講生テーブルと受講生コース情報テーブルと受講生コース申し込み情報テーブルを紐づくRepositoryです。
  */
-
 @Mapper
 public interface StudentRepository {
 
@@ -34,7 +31,6 @@ public interface StudentRepository {
    */
   List<StudentStatus> searchStudentStatusList();
 
-
   /**
    * 受講生の検索を行います。
    * @param id 受講生ID
@@ -54,14 +50,21 @@ public interface StudentRepository {
    *
    * @param courseId@return コースIDに紐づく申し込み情報
    */
-  StudentStatus searchStudentStatus (Integer courseId);
+  StudentStatus searchStudentStatus(Integer courseId);
 
+  /**
+   * 受講生の条件指定による検索を行います。
+   *
+   * @param condition 　受講生の項目
+   * @return 受講生の情報
+   */
+  List<Student> searchStudentCondition(SearchStudentConditionDto condition);
 
   /**
    * 受講生を新規登録します。IDに関しては自動採番を行う。
    * @param student 受講生
    */
-    void registerStudent(Student student);
+  void registerStudent(Student student);
 
   /**
    * 受講生コース情報を新規登録します。IDに関しては自動採番を行う。
@@ -75,18 +78,17 @@ public interface StudentRepository {
    */
   void registerStudentStatus(StudentStatus studentStatus);
 
-
   /**
    * 受講生を更新します。
    * @param student 受講生
    */
-void updateStudent(Student student);
+  void updateStudent(Student student);
 
   /**
    * 受講生コース情報のコース名を更新します。
    * @param studentCourse 受講生コース情報
    */
-void updateStudentCourses(StudentCourse studentCourse);
+  void updateStudentCourses(StudentCourse studentCourse);
 
 /**
  * 受講生コース申し込み情報を更新します。

@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="raisetech.StudentManagement.repository.StudentRepository">
 
   <!-- 受講生の全件検索 -->
-<select id="search" resultType="raisetech.StudentManagement.data.Student">
-  SELECT *
-  FROM students
-</select>
+  <select id="search" resultType="raisetech.StudentManagement.data.Student">
+    SELECT *
+    FROM students
+  </select>
 
   <!-- 受講生のコース情報の全件検索 -->
-  <select id="searchStudentsCoursesList" resultType="raisetech.StudentManagement.data.StudentCourse">
+  <select id="searchStudentsCoursesList"
+    resultType="raisetech.StudentManagement.data.StudentCourse">
     SELECT *
     FROM students_courses
   </select>
@@ -41,12 +43,49 @@
     WHERE course_id = #{courseId}
   </select>
 
+  <!-- 受講生の条件を指定した検索 -->
+  <select id="searchStudentCondition" resultType="raisetech.StudentManagement.data.Student">
+    SELECT *
+    FROM students
+    <where>
+      <if test="studentName != null">
+        AND student_name LIKE CONCAT ('%',#{studentName},'%')
+      </if>
+
+      <if test="studentNameFurigana != null">
+        AND student_name_furigana LIKE CONCAT ('%',#{studentNameFurigana},'%')
+      </if>
+
+      <if test="nickname != null">
+        AND nickname LIKE CONCAT ('%',#{nickname},'%')
+      </if>
+
+      <if test="email != null">
+        AND email LIKE CONCAT ('%',#{email},'%')
+      </if>
+
+      <if test="address != null">
+        AND address LIKE CONCAT ('%',#{address},'%')
+      </if>
+
+      <if test="age != null">
+        AND age = #{age}
+      </if>
+
+      <if test="gender != null">
+        AND gender = #{gender}
+      </if>
+
+    </where>
+  </select>
+
   <!-- 受講生の新規登録 -->
   <insert id="registerStudent" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO students (
     student_name, student_name_furigana, nickname, email, address, age, gender, remark, isDeleted
     ) VALUES (
-    #{studentName}, #{studentNameFurigana}, #{nickname}, #{email}, #{address}, #{age}, #{gender}, #{remark}, false
+    #{studentName}, #{studentNameFurigana}, #{nickname}, #{email}, #{address}, #{age}, #{gender},
+    #{remark}, false
     )
   </insert>
 
