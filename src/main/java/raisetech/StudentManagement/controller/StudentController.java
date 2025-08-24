@@ -1,7 +1,5 @@
 package raisetech.StudentManagement.controller;
 
-/* 受講生の検索や登録、更新などを行うREST APIとして受け付けるControllerです。*/
-
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -20,11 +18,10 @@ import raisetech.StudentManagement.domain.StudentDetail;
 import raisetech.StudentManagement.exception.TestException;
 import raisetech.StudentManagement.service.StudentService;
 
-@Validated //検証するために必要
+@Validated
 @RestController
 public class StudentController {
 
-  /** 受講生サービス */
   private StudentService service;
 
   /**
@@ -32,7 +29,6 @@ public class StudentController {
    *
    * @param service 受講生サービス
    */
-
   @Autowired
   public StudentController(StudentService service) {
     this.service = service;
@@ -64,7 +60,7 @@ public class StudentController {
   @Operation(summary = "受講生検索",description = "IDに紐づく受講生を検索します。")
   @GetMapping("/student/{id}")
   public StudentDetail getStudent(
-      @PathVariable @NotBlank @Pattern(regexp = "^\\d+$") String id ){
+      @PathVariable @NotBlank @Pattern(regexp = "^\\d+$") String id) {
     return service.searchStudent(id);
   }
 
@@ -76,7 +72,8 @@ public class StudentController {
    */
   @Operation(summary = "条件指定の受講生検索", description = "指定した条件の受講生を検索します。")
   @GetMapping("/students/search")
-  public List<StudentDetail> searchStudents(@Validated @ModelAttribute SearchStudentConditionDto condition) {
+  public List<StudentDetail> searchStudents(
+      @Validated @ModelAttribute SearchStudentConditionDto condition) {
     if (condition.getStudentName() == null && condition.getStudentNameFurigana() == null
         && condition.getNickname() == null
         && condition.getEmail() == null && condition.getAddress() == null

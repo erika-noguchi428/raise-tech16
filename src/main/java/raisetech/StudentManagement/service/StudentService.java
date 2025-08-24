@@ -1,13 +1,14 @@
 package raisetech.StudentManagement.service;
 
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import raisetech.StudentManagement.controller.DTO.SearchStudentConditionDto;
 import raisetech.StudentManagement.controller.converter.StudentConverter;
 import raisetech.StudentManagement.data.Student;
@@ -33,7 +34,6 @@ public class StudentService {
     this.repository = repository;
     this.converter = converter;
   }
-
 
   /**
    * 受講生詳細の一覧検索です。
@@ -68,12 +68,8 @@ public class StudentService {
    * @return 受講生詳細
    */
   public StudentDetail searchStudent(String id) {
-
-      // ① Student を取得
-      Student student = repository.searchStudent(id);
-
-      // ② StudentCourse を取得
-      List<StudentCourse> studentCourses = repository.searchStudentCourse(student.getId());
+    Student student = repository.searchStudent(id);
+    List<StudentCourse> studentCourses = repository.searchStudentCourse(student.getId());
 
     List<Integer> courseIds = studentCourses.stream()
         .map(StudentCourse::getCourseId)
@@ -83,28 +79,15 @@ public class StudentService {
         .map(repository::searchStudentStatus)
         .collect(Collectors.toList());
 
-    // ⑤ StudentCourse と StudentStatus を紐づけて CourseDetail を構築（コンバーター使用）
-      List<CourseDetail> courseDetails = converter.convertCourseDetails(studentCourses, studentStatuses);
+    List<CourseDetail> courseDetails = converter.convertCourseDetails(studentCourses,
+        studentStatuses);
 
-      // ⑥ StudentDetail にまとめて返却
-      return new StudentDetail(student, courseDetails);
-    }
-
-
-    //受講生を条件指定した検索を行います。
-    //①コントローラーから検索条件をうけとる
-  //項目の条件に合っているかチェックする機能
-  //②リポジトリ→xmlに渡して、項目に一致する受講生の情報をとってくる
-  //とってきた受講生のIDに紐づくコースっ情報と申し込み情報をとってくる
-// ↓ studentsの中のIDだけを抽出して
-
+    return new StudentDetail(student, courseDetails);
+  }
 
   public List<StudentDetail> searchStudentCondition(SearchStudentConditionDto condition) {
-
-    // 条件に合う学生一覧を取得
     List<Student> studentCondition = repository.searchStudentCondition(condition);
 
-    // 学生ID一覧を抽出
     List<String> studentIds = studentCondition.stream()
         .map(Student::getId)
         .toList();
@@ -127,91 +110,81 @@ public class StudentService {
               .filter(studentCourse -> studentCourse.getStudentId().equals(student.getId()))
               .toList();
 
-    // ⑤ StudentCourse と StudentStatus を紐づけて CourseDetail を構築（コンバーター使用）
-    List<CourseDetail> courseDetails = converter.convertCourseDetails(coursesForStudent, studentStatuses);
+          List<CourseDetail> courseDetails = converter.convertCourseDetails(coursesForStudent,
+              studentStatuses);
 
-    return new StudentDetail(student, courseDetails);
-  })
-      .toList();
-    // ⑥ StudentDetail にまとめて返却
+          return new StudentDetail(student, courseDetails);
+        })
+        .toList();
     return studentDetails;
   }
 
-
   /**
-   * 受講生詳細の登録を行います。
-   * 受講生と受講生コース情報と受講生コース申し込み情報を個別に登録し、受講生コース情報には受講生情報を紐づける値とコース開始日、コース終了日を設定します。
+   * 受講生詳細の登録を行います。 受講生と受講生コース情報と受講生コース申し込み情報を個別に登録し、受講生コース情報には受講生情報を紐づける値とコース開始日、コース終了日を設定します。
    * 受講生コース申し込み情報には、受講生コースと紐づけるようにする。
+   *
    * @param studentDetail 受講生詳細
    * @return 登録情報を付与した受講生詳細
    */
   @Transactional
   public StudentDetail registerStudent(StudentDetail studentDetail) {
-    //準備
     Student student = studentDetail.getStudent();
-
-    //やりたいことをやる
     repository.registerStudent(student);
 
+    for (CourseDetail courseDetail : studentDetail.getCourseDetail()) {
+      StudentCourse studentCourse = courseDetail.getStudentCourse();
+      initStudentsCourse(studentCourse, student);
+      repository.registerStudentCourse(studentCourse);
 
-        for (CourseDetail courseDetail : studentDetail.getCourseDetail()) {
-          StudentCourse studentCourse = courseDetail.getStudentCourse();
-          initStudentsCourse(studentCourse, student);
-          repository.registerStudentCourse(studentCourse);
+      StudentStatus studentStatus = courseDetail.getStudentStatus();
+      initStudentStatus(studentStatus, studentCourse);
+      repository.registerStudentStatus(studentStatus);
+    }
 
-          StudentStatus studentStatus = courseDetail.getStudentStatus();
-          initStudentStatus(studentStatus, studentCourse);
-          repository.registerStudentStatus(studentStatus);
-        }
     return studentDetail;
   }
 
-
   /**
-   *受講生コース情報を登録する際の初期情報を設定する。
+   * 受講生コース情報を登録する際の初期情報を設定する。
    *
    * @param studentCourses 受講生コース情報
-   * @param              student 受講生
+   * @param student        受講生
    */
-   void initStudentsCourse(StudentCourse studentCourses, Student student) {
+  void initStudentsCourse(StudentCourse studentCourses, Student student) {
     LocalDateTime now = LocalDateTime.now();
     studentCourses.setStudentId(student.getId());
-    studentCourses.setStartDate (now);
+    studentCourses.setStartDate(now);
     studentCourses.setEndDate(now.plusYears(1));
   }
 
-
   /**
-   *受講生コース情報を登録する際の初期情報を設定する。
+   * 受講生コース情報を登録する際の初期情報を設定する。
    *
    * @param studentCourses 受講生コース情報
-   * @param              studentStatus コース状況
+   * @param studentStatus  コース状況
    */
   void initStudentStatus(StudentStatus studentStatus, StudentCourse studentCourses) {
     studentStatus.setCourseId(studentCourses.getCourseId());
   }
 
-
   /**
-   * 受講生詳細の更新を行います。
-   * 受講生と受講生コース情報をそれぞれ更新します。
+   * 受講生詳細の更新を行います。 受講生と受講生コース情報をそれぞれ更新します。
    */
   @Transactional
   public void updateStudent(StudentDetail studentDetail) {
     System.out.println("Student: " + studentDetail.getStudent());
-
     repository.updateStudent(studentDetail.getStudent());
 
     for (CourseDetail courseDetail : studentDetail.getCourseDetail()) {
       StudentCourse studentCourse = courseDetail.getStudentCourse();
-      //initStudentsCourse(studentCourse, student);
       repository.updateStudentCourses(studentCourse);
 
       StudentStatus studentStatus = courseDetail.getStudentStatus();
       repository.updateStudentStatus(studentStatus);
+
       System.out.println("StudentStatus: statusId=" + studentStatus.getStatusId()
           + ", courseId=" + studentStatus.getCourseId()
           + ", status=" + studentStatus.getStatus());
-  }
+    }
   }
 }

@@ -14,13 +14,11 @@ import raisetech.StudentManagement.data.StudentStatus;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class CourseDetail {
 
-@Valid
+  @Valid
   private StudentCourse studentCourse;
 
-@Valid
+  @Valid
   private StudentStatus studentStatus;
-
 }

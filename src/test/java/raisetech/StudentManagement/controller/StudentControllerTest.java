@@ -57,40 +57,36 @@ class StudentControllerTest {
     when(service.searchStudentCondition(any())).thenReturn(Collections.emptyList());
 
     mockMvc.perform(get("/students/search")
-        .param("studentName", "鱗滝"))
-
+            .param("studentName", "鱗滝"))
         .andExpect(status().isOk())
-    .andExpect(content().json("[]"));
+        .andExpect(content().json("[]"));
 
     verify(service, times(1)).searchStudentCondition(any());
   }
 
   @Test
-  void 受講生詳細の登録が実行できて空で返ってくること()
-      throws Exception{
-    //リクエストデータは適切に構築して入力チェックの検証も兼ねている。
-    //本来であれば返りは登録されたデータが入るが、モック化すると意味がないため、レスポンスは作らない。
-    mockMvc.perform(post("/registerStudent").contentType(MediaType.APPLICATION_JSON).content(
-        """
-            {
-            "student": {
-            "studentName" : "江並康介",
-            "studentNameFurigana"  : "エナミ",
-            "nickname" : "コウジ",
-            "email" : "test@example.com",
-            "address" : "奈良県",
-            "age" : 36,
-            "gender" : "男性",
-            "remark" : ""
-            },
-            "studentCourseList" : [
-            {
-                "courseName" : "Javaコース"
-                }
-                ]
-                }
-            """
-    ))
+  void 受講生詳細の登録が実行できて空で返ってくること() throws Exception {
+    mockMvc.perform(post("/registerStudent")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("""
+                {
+                "student": {
+                "studentName" : "江並康介",
+                "studentNameFurigana"  : "エナミ",
+                "nickname" : "コウジ",
+                "email" : "test@example.com",
+                "address" : "奈良県",
+                "age" : 36,
+                "gender" : "男性",
+                "remark" : ""
+                },
+                "studentCourseList" : [
+                {
+                    "courseName" : "Javaコース"
+                    }
+                   ]
+                  }
+                """))
         .andExpect(status().isOk());
 
     verify(service, times(1)).registerStudent(any());
@@ -99,37 +95,36 @@ class StudentControllerTest {
   @Test
   void 受講生詳細の更新が実行できて空で返ってくること() throws Exception {
     String json = """
-    {
-      "student": {
-        "id": "358481",
-        "studentName": "田中 雅子",
-        "studentNameFurigana": "Tanaka Masako",
-        "nickname": "まさちゃん",
-        "email": "Masako@gmail.com",
-        "address": "Saga",
-        "age": 26,
-        "gender": "女性",
-        "remark": "",
-        "deleted": false
-      },
-      "courseDetail": [
-        {
-          "studentCourse": {
-            "courseId": 4007,
-            "studentId": "358481",
-            "courseName": "Java course",
-            "startDate": "2025-08-11T00:00:00",
-            "endDate": "2026-08-11T00:00:00"
-          },
-          "studentStatus": {
-            "statusId": 8,
-            "courseId": 4007,
-            "status": "本申込"
-          }
-        }
-      ]
-    }
-    """;
+         {
+           "student": {
+             "id": "358481",
+             "studentName": "田中 雅子",
+             "studentNameFurigana": "Tanaka Masako",
+             "nickname": "まさちゃん",
+             "email": "Masako@gmail.com",
+             "address": "Saga",
+             "age": 26,
+             "gender": "女性",
+             "remark": "",
+             "deleted": false
+           },
+           "courseDetail": [
+           {
+             "studentCourse": {
+               "courseId": 1001,
+               "studentId": "1",
+               "courseName": "Javaコース",
+               "startDate": "2025-08-11T00:00:00",
+               "endDate": "2026-08-11T00:00:00"
+             },
+             "studentStatus": {
+               "statusId": 1,
+               "courseId": 1001,
+               "status": "本申込"
+             }
+           }
+         ]
+        }""";
 
     mockMvc.perform(put("/updateStudent")
             .contentType(MediaType.APPLICATION_JSON)
@@ -139,14 +134,10 @@ class StudentControllerTest {
     verify(service, times(1)).updateStudent(any());
   }
 
-
   @Test
-  void 受講生詳細の例外APIが実行できてステータスが400で返ってくること() throws Exception  {
+  void 受講生詳細の例外APIが実行できてステータスが400で返ってくること() throws Exception {
     mockMvc.perform(get("/studentException"))
         .andExpect(status().isBadRequest());
-   // mockMvc.perform(get("/exception"))
-     //   .andExpect(status().is4xxClientError())
-       // .andExpect(content().string("このAPIは現在利用できません。古いURLとなっています。"));
   }
 
   @Test
@@ -155,11 +146,9 @@ class StudentControllerTest {
         .andExpect(status().isBadRequest());
   }
 
-
   @Test
-  void 受講生詳細の受講生で適切な値を入力したときに入力チェックに異常が発生しないこと(){
+  void 受講生詳細の受講生で適切な値を入力したときに入力チェックに異常が発生しないこと() {
     Student student = new Student();
-
     student.setId("1");
     student.setStudentName("江波 公史");
     student.setStudentNameFurigana("エナミコウジ");
@@ -169,16 +158,14 @@ class StudentControllerTest {
     student.setAge(36);
     student.setGender("男性");
 
-
     Set<ConstraintViolation<Student>> violations = validator.validate(student);
 
     assertThat(violations.size()).isEqualTo(0);
   }
 
   @Test
-  void 受講生詳細の受講生でIDに数字以外を用いたときに入力チェックに掛かること(){
+  void 受講生詳細の受講生でIDに数字以外を用いたときに入力チェックに掛かること() {
     Student student = new Student();
-
     student.setId("テストです。");
     student.setStudentName("江波 公史");
     student.setStudentNameFurigana("エナミ コウジ");
@@ -187,7 +174,6 @@ class StudentControllerTest {
     student.setAddress("奈良県");
     student.setAge(36);
     student.setGender("男性");
-
 
     Set<ConstraintViolation<Student>> violations = validator.validate(student);
 

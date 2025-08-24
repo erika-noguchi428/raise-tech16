@@ -38,8 +38,6 @@ public class Student {
   @NotBlank
   private String address;
 
-  //@NotBlank
-  //@Pattern(regexp = "^\\d+$")
   @Positive
   private int age;
 
@@ -50,12 +48,5 @@ public class Student {
   private boolean isDeleted;
 
 
-
 }
 
-/* @AssertTrue
-*   boolean isXXX(age gender){
-*  age != null && gender ! = null
-*  true
-*   }のように年齢と性別どちらもnullならエラーになるなどの規制を設定することもできる
- */
